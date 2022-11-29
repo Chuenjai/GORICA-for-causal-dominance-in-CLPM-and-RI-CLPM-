@@ -166,7 +166,7 @@ for (simteller in 1:nsim) {
 }
 
 #parameter estimates
-estsim
+estsim1
 meanEst
 estsimw1
 meanEstsimw1
@@ -191,21 +191,4 @@ PT_weights2
 #Bayes factors (PMPa only)
 bainH1H2
 bainH0H1H2
-
-write.csv(goricasim, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.goriga.H1H2.csv", row.names = FALSE)
-write.csv(weightssim, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.goriga.weights.H1H2.csv", row.names = FALSE)
-
-write.csv(AICsim, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.AIC.H0Hu.csv", row.names = FALSE)
-write.csv(AICweightssim, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.AIC.weights.H0Hu.csv", row.names = FALSE)
-
-write.csv(Penalty1, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.Penalty.goriga.H1H2.csv", row.names = FALSE)
-write.csv(PT_weights1, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.Penalty.weights.goriga.H1H2.csv", row.names = FALSE)
-
-write.csv(Penalty2, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.Penalty.AIC.H0Hu.csv", row.names = FALSE)
-write.csv(PT_weights2, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.Penalty.weights.AIC.H0Hu.csv", row.names = FALSE)
-
-write.csv(bainH1H2, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.PMPa.H1H2.csv", row.names = FALSE)
-write.csv(bainH0H1H2, "G:/My Drive/PhD/Sukpa001/My Documents/My project/Project 1/Final_project1/Revision/Simulations results/CLPM/Bivariate/nonabsolute values/2v3w/(0.1, 0.2)/p300.PMPa.H0H1H2.csv", row.names = FALSE)
-
-
 
