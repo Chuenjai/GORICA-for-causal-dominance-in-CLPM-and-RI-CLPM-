@@ -46,14 +46,14 @@ varxy <- array(NA, c(p, n)) # create array with nrow=p and ncol=n in order to ke
 varxy2 <- array(NA, c(p, n))
 colnames(varxy)<-c("x1", "x2", "x3", "y1", "y2", "y3")
 
-# hypotheses
-H0 <- "beta == gamma"
-H1 <- "beta < gamma"
-H2 <- "beta > gamma"
+# Hypotheses
+#H0 <- "beta == gamma"
+#H1 <- "beta < gamma"
+#H2 <- "beta > gamma"
 
-#H0 <- "abs(beta) == abs(gamma)"
-#H1 <- "abs(beta) < abs(gamma)"
-#H2 <- "abs(beta) > abs(gamma)"
+H0 <- "abs(beta) == abs(gamma)"
+H1 <- "abs(beta) < abs(gamma)"
+H2 <- "abs(beta) > abs(gamma)"
 
 simteller<- 1
 
@@ -68,7 +68,7 @@ for (simteller in 1:nsim) {
     
   }
   
-  clpmModel<- # <- ' for specify clpmModel and eding with '
+  clpmModel<- # <- ' for specify clpmModel and ending with '
     '
   kappa =~ 1*x1 + 1*x2 + 1*x3
   omega =~ 1*y1 + 1*y2 + 1*y3
@@ -126,53 +126,56 @@ for (simteller in 1:nsim) {
                                           remove.eq = TRUE, remove.ineq = TRUE, remove.def = FALSE, 
                                           partable = NULL, GLIST = NULL, est = NULL)
   
-  # subtract for alpha, beta, delta, gamma
-  # GORICA values and weights
+  # Subtract for alpha, beta, delta, gamma
   est<-coef(clpmConstrainedsim)[c(10,14)]
   names(est) <- c("beta", "gamma")
   estw1<-coef(clpmConstrainedsim)[c(9,10,13,14)]
   vcov<-lavInspect(clpmConstrainedsim, "vcov")[c(10,14), c(10,14)]
   
-  
+  # GORICA values and weights
   goricaResult1 <- goric(est, VCOV = vcov, H1, H2, comparison = "none", type = "gorica")
   goricaResult2 <- goric(est, VCOV = vcov, H0, comparison = "unconstrained", type = "gorica")
   
+  # Bain
   bainResults1 <- bain(clpmConstrainedsim, "beta < gamma; beta > gamma")
   bainResults2 <- bain(clpmConstrainedsim, "beta = gamma; beta < gamma; beta > gamma")
   
-  #parameter estimates
+  # Parameter estimates
   estsim1[simteller,]<-est
   meanEst<-apply(estsim1, 2, mean, na.rm=TRUE)
   names(meanEst) <- c("beta", "gamma")
+  
   estsimw1[simteller,]<-estw1
   meanEstsimw1<-apply(estsimw1, 2, mean, na.rm=TRUE) # na.rm = Excluding Missing Values(NA) from Analyses
   names(meanEstsimw1) <- c("alpha1", "beta1", "delta1", "gamma1")
   
-  #Hypothesis evaluation
-  
+  # Hypothesis evaluation
   goricasim[simteller,]<-goricaResult1$result[,4] 
   weightssim[simteller,]<-goricaResult1$result[,5]
+  
   AICsim[simteller,]<-goricaResult2$result[,4] 
   AICweightssim[simteller,]<-goricaResult2$result[,5]
+  
   Penalty1[simteller,] <- 2*goricaResult1$result[,3]
   PT_weights1[simteller,]<-IC.weights(Penalty1[simteller,])$IC.weights
   Penalty2[simteller,] <- 2*goricaResult2$result[,3]
   PT_weights2[simteller,]<-IC.weights(Penalty2[simteller,])$IC.weights
-  bainH1H2[simteller,] <- bainResults1$fit[1:2,8]
-  bainH0H1H2[simteller,] <- bainResults2$fit[1:3,8]
+  
+  #bainH1H2[simteller,] <- bainResults1$fit[1:2,8]
+  #bainH0H1H2[simteller,] <- bainResults2$fit[1:3,8]
   
   simteller<- simteller+1
 
 }
 
-#parameter estimates
+# Parameter estimates
 estsim1
 meanEst
 estsimw1
 meanEstsimw1
 
 
-#causal dominance hypo
+# Causal dominance hypo
 goricasim #H1:"beta < gamma" vs H2:"beta > gamma" 
 weightssim
 sum(weightssim[,1]>weightssim[,2], na.rm=TRUE) #support H1 
@@ -182,13 +185,13 @@ AICweightssim #AIC weights based on GORICA
 sum(AICweightssim[,1]>AICweightssim[,2], na.rm=TRUE)
 sum(AICweightssim[,2]>AICweightssim[,1], na.rm=TRUE)
 
-#Penalty
+# Penalty
 Penalty1
 PT_weights1
 Penalty2
 PT_weights2
 
-#Bayes factors (PMPa only)
+# Bayes factors (PMPa only)
 bainH1H2
 bainH0H1H2
 
