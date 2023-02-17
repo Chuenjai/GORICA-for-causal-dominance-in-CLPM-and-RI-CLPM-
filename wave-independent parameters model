@@ -1,0 +1,85 @@
+#R code to run a `wave-independent' parameters model
+
+#Step 0: Install the packages in R by executing the following:
+install.packages("lavaan")
+install.packages("restriktor")
+install.packages("devtools")
+install_github("rebeccakuiper/ICweights")
+
+#Then, load the packages as follow:
+library(lavaan)  	
+library(restriktor) 
+library(devtools)
+library(ICweights) 	 
+
+#Step 1: Load the data set into R, where we assume that data set is called `data.dat'.
+data <- read.table("data.dat")
+
+#Step 2: Standardize the data such that lavaan will constrain the standardized estimates (as explained below).
+data <- scale(data)
+
+#Step 3: Specify the causal dominance hypothesis of interest.
+H1a <- "abs(beta) < abs(gamma)" 
+
+#Step 4: Fit the RI-CLPM using the R package lavaan.
+riclpmModel1<-'
+
+#Intercepts
+kappa =~ 1*x1 + 1*x2 + 1*x3
+omega =~ 1*y1 + 1*y2 + 1*y3
+
+x1 ~ mu1*1 	
+x2 ~ mu2*1
+x3 ~ mu3*1
+y1 ~ pi1*1
+y2 ~ pi2*1
+y3 ~ pi3*1
+
+# Variances and covariance of the random intercepts
+kappa  ~~ kappa 	# variance
+omega  ~~ omega 	# variance
+kappa  ~~ omega 	# covariance
+
+# Latent variables for autoregressive and cross-lagged
+effects
+p1 =~ 1*x1 #each factor loading set to 1
+p2 =~ 1*x2
+p3 =~ 1*x3
+q1 =~ 1*y1
+q2 =~ 1*y2
+q3 =~ 1*y3
+
+# Constrain autoregressive and cross-lagged effects to bethe same over time
+# Label the estimates as alpha, beta, delta, and gamma 
+# We use - per parameter - the same name for each pair of consecutive time-points such that we have specify a wave-independent parameters model.
+
+p3 ~ alpha*p2 + beta*q2
+p2 ~ alpha*p1 + beta*q1
+q3 ~ delta*q2 + gamma*p2
+q2 ~ delta*q1 + gamma*p1
+p1 ~~ p1 		
+p2 ~~ u*p2
+p3 ~~ u*p3
+q1 ~~ q1 		
+q2 ~~ v*q2
+q3 ~~ v*q3
+p1 ~~ q1 		
+p2 ~~ uv*q2 				
+p3 ~~ uv*q3 '
+
+riclpm1 <- lavaan(riclpmModel1, data = data,
+missing = 'ML',
+int.ov.free = F,
+int.lv.free = F,
+auto.fix.first = F,
+auto.fix.single = F,
+auto.cov.lv.x = F,
+auto.cov.y = F,
+auto.var = F)
+
+#Step 5: Compute the GORICA values and weights using the goric() function from the restriktor package.
+goricaResult1 <- goric(riclpm1, H1a, comparison = "complement", type = "gorica")
+
+#Step 6: Compute the penalty weights using the IC.weights() function from the ICweights package.
+GORICA_values <- goricaResult1$result[,5]
+Penalty_weights <- IC.weights(2*goricaResult1$result[,3])$IC.weights
