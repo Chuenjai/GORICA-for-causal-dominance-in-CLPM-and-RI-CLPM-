@@ -1,0 +1,102 @@
+#Step 0: Install the packages in R by executing the following:
+install.packages("lavaan")
+install.packages("restriktor")
+install.packages("devtools")
+install_github("rebeccakuiper/ICweights")
+
+#Then, load the packages as follow:
+library(lavaan)  	
+library(restriktor) 
+library(devtools)
+library(ICweights) 	 
+
+#Step 1: Load the data set into R, where we assume that data set is called `data.dat'.
+data <- read.table("data.dat")
+
+#Step 2: Specify the causal dominance hypothesis of interest,
+H1b <- "abs(beta2) < abs(gamma2); abs(beta3) < abs(gamma3)". 
+
+#Step 3: Fit the RI-CLPM using the R package lavaan.
+riclpmModel2<-'
+
+#Intercepts
+kappa =~ 1*x1 + 1*x2 + 1*x3
+omega =~ 1*y1 + 1*y2 + 1*y3
+
+x1 ~ mu1*1 	
+x2 ~ mu2*1
+x3 ~ mu3*1
+y1 ~ pi1*1
+y2 ~ pi2*1
+y3 ~ pi3*1
+
+# Variances and covariance of the random intercepts
+kappa  ~~ kappa 	# variance
+omega  ~~ omega 	# variance
+kappa  ~~ omega 	# covariance
+
+# Latent variables for autoregressive and cross-lagged
+effects
+p1 =~ 1*x1 #each factor loading set to 1
+p2 =~ 1*x2
+p3 =~ 1*x3
+q1 =~ 1*y1
+q2 =~ 1*y2
+q3 =~ 1*y3
+
+# Unconstrained autoregressive and cross-lagged effects
+# Specify the name of the standardized estimates which will be used in the hypothesis of interest in step 2
+p3 ~ alpha3*p2 + beta3*q2
+p2 ~ alpha2*p1 + beta2*q1
+q3 ~ delta3*q2 + gamma3*p2
+q2 ~ delta2*q1 + gamma2*p1
+p1 ~~ p1 
+p2 ~~ u2*p2
+p3 ~~ u3*p3
+q1 ~~ q1 
+q2 ~~ v2*q2
+q3 ~~ v3*q3
+p1 ~~ q1 
+p2 ~~ u2v2*q2 
+p3 ~~ u3v3*q3 '
+
+riclpm2 <- lavaan(riclpmModel2, data = data,
+missing = 'ML',
+int.ov.free = F,
+int.lv.free = F,
+auto.fix.first = F,
+auto.fix.single = F,
+auto.cov.lv.x = F,
+auto.cov.y = F,
+auto.var = F)
+
+#Step 4: Standardize parameter estimates for a fair comparison of parameters, 
+#one often needs the corresponding variables to be measured on the same scale. 
+#To make parameters comparable, it is often helpful (like in case of cross-lagged parameters referring to variables on different scales) 
+#to inspect standardized parameters.
+
+StdEst <- standardizedsolution(riclpm2, type = "std.nox", 
+          se = TRUE, zstat = TRUE, pvalue = TRUE, 
+          ci = TRUE, level = 0.95, cov.std = TRUE, 
+          remove.eq = TRUE, remove.ineq = TRUE, 
+          remove.def = FALSE, partable = NULL, 
+          GLIST = NULL, est = NULL)
+
+#Step 5: Extract the standardized cross-lagged estimates and their covariance matrix.
+
+est2  <- StdEst[c(25,29,23,27),5]
+names(est2) <- c("beta2", "gamma2", "beta3", "gamma3")
+
+vcov2 <- lavInspect(riclpm2, "vcov.std.nox")[c(13,17,11,15), c(13,17,11,15)]
+
+#Step 6: Compute the GORICA values and weights using the goric() function from the restriktor package.
+
+goricaResult2 <- goric(est2, VCOV = vcov2, H1b, 
+                 comparison = "complement", 
+                 type = "gorica")
+
+
+#Step 7: Compute the penalty weights using the IC.weights() function from the ICweights package.
+
+GORICA_weights2 <- goricaResult2$result[,5]
+Penalty_weights2 <- IC.weights(2*goricaResult2$result[,3])$IC.weights
